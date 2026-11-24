@@ -3,9 +3,14 @@
 # 也可以是整段 base64, 脚本两种都认。
 # 也可以用环境变量代替这个文件: SUB_URLS="https://...,https://..."
 #
-# 下面是占位示例, 请换成你自己的订阅源再跑。
+# 下面 3 个是公开免费订阅源, 2026-11-24 刚实测过, 都能抓到节点:
+#   free18/v2ray v.txt          约 166 条 (vless/trojan/vmess/ss/hysteria2)
+#   node-sub-zixf v2ray.txt     约 740 条 (vless/ss/trojan/vmess/hysteria2)
+#   ermaozi/get_subscribe       约 398 条 (vless/ss/vmess/trojan/hysteria2)
 # 注意: 免费公开订阅里的节点大多是机房, 家宽本来就少,
 # 跑完 residential.txt 只有几个甚至 0 个, 是正常的, 不是脚本坏了。
+# 免费节点流量经过第三方服务器, 别用它登录银行、支付和重要 AI 账号。
 #
-# https://example.com/your-subscription-1
-# https://example.com/your-subscription-2
+https://raw.githubusercontent.com/free18/v2ray/main/v.txt
+https://raw.githubusercontent.com/chenzhihan1751-cyber/node-sub-zixf/main/sub/v2ray.txt
+https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt
