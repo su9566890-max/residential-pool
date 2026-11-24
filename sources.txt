@@ -1,0 +1,11 @@
+# 订阅源: 一行一个 URL, 以 # 开头的是注释, 会被跳过。
+# 订阅可以是明文链接 (一行一个 vmess:// / vless:// ...),
+# 也可以是整段 base64, 脚本两种都认。
+# 也可以用环境变量代替这个文件: SUB_URLS="https://...,https://..."
+#
+# 下面是占位示例, 请换成你自己的订阅源再跑。
+# 注意: 免费公开订阅里的节点大多是机房, 家宽本来就少,
+# 跑完 residential.txt 只有几个甚至 0 个, 是正常的, 不是脚本坏了。
+#
+# https://example.com/your-subscription-1
+# https://example.com/your-subscription-2
