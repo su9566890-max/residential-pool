@@ -1,0 +1,60 @@
+name: Residential Pool Daily
+
+# 每天定时跑一次 residential_pool.py, 把筛出的家宽/移动节点写回 residential.txt。
+# 只在定时和手动触发时跑, 不监听 push, 所以回提交 residential.txt 不会自己触发自己。
+on:
+  schedule:
+    # 每天 08:00 北京时间 (GitHub cron 用 UTC, 北京时间 = UTC+8)
+    # 定时任务不保证准点, 常会晚几分钟到几十分钟, 属于正常情况。
+    - cron: "0 0 * * *"
+  workflow_dispatch: # 支持在 Actions 页面手动触发, 不用等明天
+
+permissions:
+  contents: write # 回提交 residential.txt 需要写权限, 只读会 push 失败
+
+concurrency:
+  group: residential-pool
+  cancel-in-progress: false # 跑一半别被下一轮打断, 否则 residential.txt 可能只写一半
+
+jobs:
+  pool:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TZ: Asia/Shanghai
+      # 私有订阅别写进 sources.txt (会进仓库), 写进仓库 Secret SUB_URLS,
+      # 多个用英文逗号隔开。脚本会把 Secret 里的源和 sources.txt 里的合并着跑。
+      SUB_URLS: ${{ secrets.SUB_URLS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install sing-box
+        env:
+          SING_BOX_VERSION: "1.14.4" # 2026-11-24 核实过的最新版, 换版改这里一行即可
+        run: |
+          set -e
+          curl -fsSL -o /tmp/sing-box.tar.gz \
+            "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
+          tar -xzf /tmp/sing-box.tar.gz -C /tmp
+          sudo install -m 0755 "/tmp/sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box" /usr/local/bin/sing-box
+          sing-box version
+
+      - name: Run residential pool
+        # 500 个节点、并发 3、单个 12 秒超时, 最坏约半小时, 在 timeout 60 分钟内。
+        # 节点少的时候几分钟就跑完。跑完只写 residential.txt 一个文件。
+        run: python3 residential_pool.py --max-nodes 500 --test-workers 3 --timeout 12
+
+      - name: Commit residential.txt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add residential.txt
+          # 没变化就不提交, 避免每天产生空提交
+          git diff --cached --quiet || git commit -m "chore: update residential.txt [skip ci]"
+          git push
